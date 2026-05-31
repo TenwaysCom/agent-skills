@@ -1,0 +1,4 @@
+interface:
+  display_name: "Merrill Clock Investing"
+  short_description: "Macro-cycle investment framing"
+  default_prompt: "Use $merrill-clock-investing to classify major economies by Merrill clock phase and give allocation guidance."

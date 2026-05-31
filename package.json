@@ -1,0 +1,26 @@
+{
+  "name": "@uynil/agent-skills",
+  "version": "0.1.0",
+  "description": "Agent Skills repository compatible with agent-skills-cli.",
+  "type": "module",
+  "bin": {
+    "skills": "./bin/skills.js"
+  },
+  "files": [
+    "bin/**",
+    "scripts/**",
+    "skills/**",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "validate": "node scripts/validate-skills.mjs"
+  },
+  "keywords": [
+    "agent-skills",
+    "skills",
+    "codex",
+    "kimi"
+  ],
+  "license": "MIT"
+}
