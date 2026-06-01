@@ -1,40 +1,40 @@
 # Agent Skills
 
-This repository is structured as a standard Agent Skills collection for third-party installers such as `agent-skills-cli`.
+This repository is structured as a standard Agent Skills collection for installers such as `skills`.
 
 ## Available Skills
 
 - `merrill-clock-investing`: Classify economies by Merrill Clock cycle phase and translate the result into high-level asset allocation guidance.
 - `tenways-odoo-elk-diagnostics`: Standard Tenways Odoo ELK/APM investigation template for production/UAT incidents, WMS duplicate sends, cron/API/XML-RPC anomalies, database serialization conflicts, and slow requests.
 
-## Install With agent-skills-cli
+## Install With skills
 
 List skills in this repository:
 
 ```bash
-npx agent-skills-cli add uynil/agent-skills --list
+npx skills add tenwayscom/agent-skills --list
 ```
 
-Install a specific skill into Kimi Code CLI:
+Install a specific skill:
 
 ```bash
-npx agent-skills-cli add uynil/agent-skills --skill merrill-clock-investing --agent kimi-cli
+npx skills add tenwayscom/agent-skills --skill merrill-clock-investing
 ```
 
 ```bash
-npx agent-skills-cli add uynil/agent-skills --skill tenways-odoo-elk-diagnostics --agent kimi-cli
+npx skills add tenwayscom/agent-skills --skill tenways-odoo-elk-diagnostics
 ```
 
-Install globally for Kimi Code CLI:
+Install for a specific agent:
 
 ```bash
-npx agent-skills-cli add uynil/agent-skills --skill merrill-clock-investing --agent kimi-cli --global
+npx skills add tenwayscom/agent-skills --skill merrill-clock-investing --agent kimi-cli
 ```
 
-Some `agent-skills-cli` distributions also expose the shorter `skills` binary:
+Install globally:
 
 ```bash
-npx skills add uynil/agent-skills --skill merrill-clock-investing --agent kimi-cli
+npx skills add tenwayscom/agent-skills --skill merrill-clock-investing --agent kimi-cli --global
 ```
 
 ## Local-First Installer
@@ -47,7 +47,7 @@ This repository also ships a small `skills` binary for local-first installs. It 
 Install from the current repository into the shared project skills directory:
 
 ```bash
-npx @uynil/agent-skills add merrill-clock-investing
+npx skills add tenwayscom/agent-skills --skill merrill-clock-investing
 ```
 
 That writes to:
@@ -59,13 +59,13 @@ That writes to:
 Install for Kimi Code CLI using the same shared project directory:
 
 ```bash
-npx @uynil/agent-skills add merrill-clock-investing --agent kimi
+npx skills add tenwayscom/agent-skills --skill merrill-clock-investing --agent kimi
 ```
 
 Install globally for Kimi-compatible Agent Skills clients:
 
 ```bash
-npx @uynil/agent-skills add merrill-clock-investing --agent kimi --global
+npx skills add tenwayscom/agent-skills --skill merrill-clock-investing --agent kimi --global
 ```
 
 That writes to:
@@ -77,17 +77,7 @@ That writes to:
 For local testing, override the destination:
 
 ```bash
-npx @uynil/agent-skills add merrill-clock-investing --target /tmp/skills
-```
-
-The exact command `npx skills add merrill-clock-investing` only works if the npm package being executed is named `skills` or if another installed `skills` CLI delegates to this package. This package exposes a `skills` binary, but its package name is currently `@uynil/agent-skills`.
-
-## Install From npm
-
-After this package is published, installers that support npm sources can use:
-
-```bash
-npx agent-skills-cli add npm:@uynil/agent-skills --skill merrill-clock-investing --agent kimi-cli
+npx skills add tenwayscom/agent-skills --skill merrill-clock-investing --target /tmp/skills
 ```
 
 ## Repository Layout
