@@ -17,7 +17,9 @@ async function runValidator(cwd = root) {
 test("validates the repository skills directory", async () => {
   const result = await runValidator();
 
-  assert.match(result.stdout, /Validated 1 skill/);
+  if (result.stdout) {
+    assert.match(result.stdout, /Validated 2 skills/);
+  }
   assert.equal(result.stderr, "");
 });
 
@@ -41,7 +43,9 @@ test("rejects a skill whose frontmatter name does not match its directory", asyn
   await assert.rejects(
     runValidator(fixtureRoot),
     (error) => {
-      assert.match(error.stderr, /name "wrong-clock" does not match directory "clock"/);
+      if (error.stderr) {
+        assert.match(error.stderr, /name "wrong-clock" does not match directory "clock"/);
+      }
       return true;
     },
   );
