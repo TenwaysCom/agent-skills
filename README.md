@@ -5,6 +5,7 @@ This repository is structured as a standard Agent Skills collection for third-pa
 ## Available Skills
 
 - `merrill-clock-investing`: Classify economies by Merrill Clock cycle phase and translate the result into high-level asset allocation guidance.
+- `tenways-odoo-elk-diagnostics`: Standard Tenways Odoo ELK/APM investigation template for production/UAT incidents, WMS duplicate sends, cron/API/XML-RPC anomalies, database serialization conflicts, and slow requests.
 
 ## Install With agent-skills-cli
 
@@ -18,6 +19,10 @@ Install a specific skill into Kimi Code CLI:
 
 ```bash
 npx agent-skills-cli add uynil/agent-skills --skill merrill-clock-investing --agent kimi-cli
+```
+
+```bash
+npx agent-skills-cli add uynil/agent-skills --skill tenways-odoo-elk-diagnostics --agent kimi-cli
 ```
 
 Install globally for Kimi Code CLI:
@@ -94,6 +99,8 @@ skills/
     agents/
     references/
     scripts/
+  tenways-odoo-elk-diagnostics/
+    SKILL.md
 ```
 
 Each skill directory must contain `SKILL.md` with `name` and `description` frontmatter. The `name` value must match the directory name so skill installers can resolve it consistently.

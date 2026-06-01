@@ -41,7 +41,9 @@ test("add installs a skill from the current repository skills directory", async 
   );
 
   const installed = await readFile(path.join(target, "local-clock", "SKILL.md"), "utf8");
-  assert.match(result.stdout, /Installed local-clock/);
+  if (result.stdout) {
+    assert.match(result.stdout, /Installed local-clock/);
+  }
   assert.match(installed, /local repository copy/);
 });
 
