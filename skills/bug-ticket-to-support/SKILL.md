@@ -30,11 +30,6 @@ Convert a support ticket conversation into the **Part A (Support Layer)** spec a
 - Severity based on actual business impact, do not over-escalate.
 - Never write technical root cause, code locations, or fix suggestions.
 
-## Output destination
-
-Write the output to `docs/ai-dev/specs/bug-{ticket_id}-support.md`.
-If the `specs/` directory does not exist, create it.
-
 ## Prompt
 
 ```text

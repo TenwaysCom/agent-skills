@@ -35,10 +35,6 @@ Convert a confirmed **Part A (Simplified Requirements)** spec plus the actual co
 - Mark uncertain items as "待补充".
 - Read the lifecycle documents in `docs/ai-dev/lifecycle/` for context before writing.
 
-## Output destination
-
-Write the output to `docs/ai-dev/specs/story-{story_id}-tech-spec.md`.
-
 ## Prompt
 
 ```text

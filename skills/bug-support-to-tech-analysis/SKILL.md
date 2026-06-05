@@ -37,10 +37,6 @@ The output is a **draft for developer review**. Root cause and fix approach are 
 - The fix approach is a draft suggestion; do not execute.
 - Read the lifecycle documents in `docs/ai-dev/lifecycle/` for context before writing.
 
-## Output destination
-
-Write the output to `docs/ai-dev/specs/bug-{ticket_id}-tech-analysis.md`.
-
 ## Prompt
 
 ```text

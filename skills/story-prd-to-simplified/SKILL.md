@@ -32,11 +32,6 @@ Convert a PRD document into the **Part A (Simplified Requirements)** spec as def
 - Mark uncertain items as "待确认" or "待研发评估".
 - Mark unclear PRD points as "待产品确认".
 
-## Output destination
-
-Write the output to `docs/ai-dev/specs/story-{story_id}-simplified.md`.
-If the `specs/` directory does not exist, create it.
-
 ## Prompt
 
 ```text
