@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -18,7 +18,9 @@ test("validates the repository skills directory", async () => {
   const result = await runValidator();
 
   if (result.stdout) {
-    assert.match(result.stdout, /Validated 2 skills/);
+    const entries = await readdir(path.join(root, 'skills'), { withFileTypes: true });
+    const count = entries.filter(entry => entry.isDirectory() && !entry.name.startsWith('.')).length;
+    assert.ok(result.stdout.includes(`Validated ${count} skills:`));
   }
   assert.equal(result.stderr, "");
 });

@@ -6,6 +6,7 @@ This repository is structured as a standard Agent Skills collection for installe
 
 ### General
 
+- `agy`: Delegate tasks to the local agy CLI, save Markdown results, and resume explicit conversations. Requires Node.js 18+ and an authenticated local `agy`.
 - `merrill-clock-investing`: Classify economies by Merrill Clock cycle phase and translate the result into high-level asset allocation guidance.
 
 ### Tenways Odoo — Story & Bug Technical Spec Pipeline
