@@ -10,9 +10,11 @@
     "bin/**",
     "scripts/**",
     "skills/**",
-    "README.md"
+    "README.md",
+    "docs/**"
   ],
   "scripts": {
+    "install:dev": "node bin/skills.js install-dev",
     "test": "node --test tests/*.test.mjs",
     "validate": "node scripts/validate-skills.mjs"
   },

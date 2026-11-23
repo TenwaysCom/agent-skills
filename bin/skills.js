@@ -5,22 +5,35 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const developmentSkills = [
+  "dev-requirements",
+  "dev-test",
+  "dev-review",
+  "dev-acceptance",
+  "dev-release",
+];
 
 function usage() {
   return [
     "Usage:",
     "  skills add <skill-name> [--agent <agent>] [--global] [--target <dir>] [--force]",
     "  skills install <skill-name> [--agent <agent>] [--global] [--target <dir>] [--force]",
+    "  skills install-dev [--target <dir>] [--force]",
+    "  install-dev defaults to ~/.agents/skills",
     "",
     "Examples:",
     "  skills add merrill-clock-investing",
     "  skills add merrill-clock-investing --agent kimi",
     "  skills add merrill-clock-investing --agent kimi-cli --global",
+    "  skills install-dev",
   ].join("\n");
 }
 
 function parseArgs(argv) {
-  const [command, skillName, ...rest] = argv;
+  const [command, ...rest] = argv;
+  const skillName = (command === "add" || command === "install") && !rest[0]?.startsWith("-")
+    ? rest.shift()
+    : undefined;
   const options = {
     command,
     skillName,
@@ -28,10 +41,18 @@ function parseArgs(argv) {
     force: false,
     global: false,
     target: null,
+    help: command === "--help" || command === "-h",
   };
 
   for (let index = 0; index < rest.length; index += 1) {
     const arg = rest[index];
+    if (command === "install-dev" && ["--agent", "-a", "--global", "-g"].includes(arg)) {
+      throw new Error("install-dev uses ~/.agents/skills; use --target to choose another directory.");
+    }
+    if ((arg === "--agent" || arg === "-a" || arg === "--target") &&
+        (!rest[index + 1] || rest[index + 1].startsWith("-"))) {
+      throw new Error(`Missing value for ${arg}.`);
+    }
     if (arg === "--agent" || arg === "-a") {
       options.agent = rest[++index];
     } else if (arg === "--target") {
@@ -74,6 +95,10 @@ function resolveTargetRoot(options, cwd) {
     return path.resolve(cwd, options.target);
   }
 
+  if (options.command === "install-dev") {
+    return path.join(homedir(), ".agents", "skills");
+  }
+
   const agent = (options.agent || "agents").toLowerCase();
   if (options.global) {
     if (agent === "codex") {
@@ -90,36 +115,42 @@ function resolveTargetRoot(options, cwd) {
   return path.join(cwd, ".agents", "skills");
 }
 
-async function addSkill(options, cwd) {
-  if (!options.skillName) {
+async function addSkills(options, cwd) {
+  const skillNames = options.command === "install-dev" ? developmentSkills : [options.skillName];
+  if (!skillNames[0]) {
     throw new Error(`Missing skill name.\n\n${usage()}`);
   }
 
-  const source = await findSkill(options.skillName, cwd);
-  if (!source) {
-    throw new Error(
-      [
-        `Skill not found: ${options.skillName}`,
-        `Looked in:`,
-        `  ${path.join(cwd, "skills", options.skillName)}`,
-        `  ${path.join(packageRoot, "skills", options.skillName)}`,
-      ].join("\n"),
-    );
-  }
-
   const targetRoot = resolveTargetRoot(options, cwd);
-  const target = path.join(targetRoot, options.skillName);
-  if ((await exists(target)) && !options.force) {
-    throw new Error(`Skill already exists: ${target}\nUse --force to overwrite it.`);
+  const installs = [];
+  for (const name of skillNames) {
+    const source = await findSkill(name, cwd);
+    if (!source) {
+      throw new Error(
+        [
+          `Skill not found: ${name}`,
+          `Looked in:`,
+          `  ${path.join(cwd, "skills", name)}`,
+          `  ${path.join(packageRoot, "skills", name)}`,
+        ].join("\n"),
+      );
+    }
+
+    const target = path.join(targetRoot, name);
+    if ((await exists(target)) && !options.force) {
+      throw new Error(`Skill already exists: ${target}\nUse --force to overwrite it.`);
+    }
+    installs.push({ name, source, target });
   }
 
   await mkdir(targetRoot, { recursive: true });
-  await cp(source.path, target, {
-    force: options.force,
-    recursive: true,
-  });
-
-  console.log(`Installed ${options.skillName} from ${source.label} to ${target}`);
+  for (const { name, source, target } of installs) {
+    await cp(source.path, target, {
+      force: options.force,
+      recursive: true,
+    });
+    console.log(`Installed ${name} from ${source.label} to ${target}`);
+  }
 }
 
 async function main() {
@@ -129,11 +160,11 @@ async function main() {
     return;
   }
 
-  if (options.command !== "add" && options.command !== "install") {
+  if (!["add", "install", "install-dev"].includes(options.command)) {
     throw new Error(`Unknown command: ${options.command}\n\n${usage()}`);
   }
 
-  await addSkill(options, process.cwd());
+  await addSkills(options, process.cwd());
 }
 
 main().catch((error) => {
