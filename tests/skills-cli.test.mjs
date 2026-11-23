@@ -74,25 +74,30 @@ test("install retains the agent-specific project destination for individual skil
   assert.equal(await stat(path.join(repoRoot, ".agents")).catch(() => null), null);
 });
 
-const developmentSkills = [
-  "dev-requirements",
-  "dev-test",
-  "dev-review",
-  "dev-acceptance",
-  "dev-release",
+const suiteCases = [
+  {
+    command: "install-dev",
+    skills: ["dev-requirements", "dev-test", "dev-review", "dev-acceptance", "dev-release"],
+  },
+  {
+    command: "install-odoo",
+    skills: ["story-prd-to-simplified", "story-simplified-to-tech-spec", "bug-ticket-to-support", "bug-support-to-tech-analysis", "tenways-odoo-elk-diagnostics"],
+  },
 ];
 
-async function developmentFixture() {
-  const repoRoot = await mkdtemp(path.join(tmpdir(), "development-suite-"));
+async function suiteFixture() {
+  const repoRoot = await mkdtemp(path.join(tmpdir(), "skill-suite-"));
   const target = path.join(repoRoot, "user", ".agents", "skills");
   await mkdir(path.join(repoRoot, "bin"));
   await cp(cli, path.join(repoRoot, "bin", "skills.mjs"));
-  for (const name of developmentSkills) {
-    await writeSkill(repoRoot, name, `fixture ${name}`);
+  for (const suite of suiteCases) {
+    for (const name of suite.skills) {
+      await writeSkill(repoRoot, name, `fixture ${name}`);
+    }
+    const reference = path.join(repoRoot, "skills", suite.skills[0], "references", "context.md");
+    await mkdir(path.dirname(reference));
+    await writeFile(reference, `resource for ${suite.command}\n`);
   }
-  const reference = path.join(repoRoot, "skills", "dev-requirements", "references", "context.md");
-  await mkdir(path.dirname(reference));
-  await writeFile(reference, "suite resource\n");
   const runner = path.join(repoRoot, "run.mjs");
   await writeFile(runner, [
     'import os from "node:os";',
@@ -104,80 +109,99 @@ async function developmentFixture() {
   return {
     repoRoot,
     target,
-    run: (args = []) => execFileAsync(process.execPath, [runner, "install-dev", ...args], { cwd: repoRoot }),
+    run: (command, args = []) => execFileAsync(process.execPath, [runner, command, ...args], { cwd: repoRoot }),
   };
 }
 
-test("install-dev installs all five skills and resources into the shared user directory", async () => {
-  const fixture = await developmentFixture();
-  await fixture.run();
-  assert.deepEqual((await readdir(fixture.target)).sort(), [...developmentSkills].sort());
-  for (const name of developmentSkills) {
-    const installed = await readFile(path.join(fixture.target, name, "SKILL.md"), "utf8");
-    assert.match(installed, new RegExp(`fixture ${name}`));
-  }
-  assert.equal(await readFile(path.join(fixture.target, "dev-requirements", "references", "context.md"), "utf8"), "suite resource\n");
-});
-
-test("install-dev honors an explicit target instead of the shared user directory", async () => {
-  const fixture = await developmentFixture();
-  const target = path.join(fixture.repoRoot, "custom target");
-  await fixture.run(["--target", target]);
-  assert.deepEqual((await readdir(target)).sort(), [...developmentSkills].sort());
-  assert.equal(await stat(fixture.target).catch(() => null), null);
-});
-
-test("install-dev detects a last-skill conflict before installing any other skill", async () => {
-  const fixture = await developmentFixture();
-  const existing = path.join(fixture.target, "dev-release", "SKILL.md");
-  await mkdir(path.dirname(existing), { recursive: true });
-  await writeFile(existing, "keep existing skill\n");
-  await assert.rejects(fixture.run(), (error) => {
-    assert.match(error.stderr, /Skill already exists/);
-    return true;
+for (const suite of suiteCases) {
+  test(`${suite.command} installs only its five skills and resources into the shared user directory`, async () => {
+    const fixture = await suiteFixture();
+    await fixture.run(suite.command);
+    assert.deepEqual((await readdir(fixture.target)).sort(), [...suite.skills].sort());
+    for (const name of suite.skills) {
+      const installed = await readFile(path.join(fixture.target, name, "SKILL.md"), "utf8");
+      assert.match(installed, new RegExp(`fixture ${name}`));
+    }
+    const resource = await readFile(path.join(fixture.target, suite.skills[0], "references", "context.md"), "utf8");
+    assert.equal(resource, `resource for ${suite.command}\n`);
   });
-  assert.deepEqual(await readdir(fixture.target), ["dev-release"]);
-  assert.equal(await readFile(existing, "utf8"), "keep existing skill\n");
-});
 
-test("install-dev detects a missing final source before creating the destination", async () => {
-  const fixture = await developmentFixture();
-  await rm(path.join(fixture.repoRoot, "skills", "dev-release"), { recursive: true });
-  await assert.rejects(fixture.run(), (error) => {
-    assert.match(error.stderr, /Skill not found: dev-release/);
-    return true;
+  test(`${suite.command} honors an explicit target instead of the shared user directory`, async () => {
+    const fixture = await suiteFixture();
+    const target = path.join(fixture.repoRoot, "custom target");
+    await fixture.run(suite.command, ["--target", target]);
+    assert.deepEqual((await readdir(target)).sort(), [...suite.skills].sort());
+    assert.equal(await stat(fixture.target).catch(() => null), null);
   });
-  assert.equal(await stat(fixture.target).catch(() => null), null);
-});
 
-test("install-dev force updates installed skills and their resources", async () => {
-  const fixture = await developmentFixture();
-  await fixture.run();
-  await writeSkill(fixture.repoRoot, "dev-release", "updated release skill");
-  await writeFile(path.join(fixture.repoRoot, "skills", "dev-requirements", "references", "context.md"), "updated resource\n");
-  await fixture.run(["--force"]);
-  assert.match(await readFile(path.join(fixture.target, "dev-release", "SKILL.md"), "utf8"), /updated release skill/);
-  assert.equal(await readFile(path.join(fixture.target, "dev-requirements", "references", "context.md"), "utf8"), "updated resource\n");
-});
-
-test("install-dev rejects missing target values before installing", async () => {
-  const fixture = await developmentFixture();
-  for (const args of [["--target"], ["--target", "--force"]]) {
-    await assert.rejects(fixture.run(args), (error) => {
-      assert.match(error.stderr, /Missing value for --target/);
+  test(`${suite.command} detects a last-skill conflict before installing any other skill`, async () => {
+    const fixture = await suiteFixture();
+    const last = suite.skills.at(-1);
+    const existing = path.join(fixture.target, last, "SKILL.md");
+    await mkdir(path.dirname(existing), { recursive: true });
+    await writeFile(existing, "keep existing skill\n");
+    await assert.rejects(fixture.run(suite.command), (error) => {
+      assert.match(error.stderr, /Skill already exists/);
       return true;
     });
-  }
-  assert.equal(await stat(fixture.target).catch(() => null), null);
-});
+    assert.deepEqual(await readdir(fixture.target), [last]);
+    assert.equal(await readFile(existing, "utf8"), "keep existing skill\n");
+  });
 
-test("install-dev rejects agent-specific flags rather than ignoring them", async () => {
-  const fixture = await developmentFixture();
-  for (const args of [["--agent", "codex"], ["--global"]]) {
-    await assert.rejects(fixture.run(args), (error) => {
-      assert.match(error.stderr, /use --target/);
+  test(`${suite.command} detects a missing final source before creating the destination`, async () => {
+    const fixture = await suiteFixture();
+    const last = suite.skills.at(-1);
+    await rm(path.join(fixture.repoRoot, "skills", last), { recursive: true });
+    await assert.rejects(fixture.run(suite.command), (error) => {
+      assert.match(error.stderr, new RegExp(`Skill not found: ${last}`));
       return true;
     });
-  }
-  assert.equal(await stat(fixture.target).catch(() => null), null);
+    assert.equal(await stat(fixture.target).catch(() => null), null);
+  });
+
+  test(`${suite.command} force updates installed skills and their resources`, async () => {
+    const fixture = await suiteFixture();
+    await fixture.run(suite.command);
+    const last = suite.skills.at(-1);
+    await writeSkill(fixture.repoRoot, last, "updated skill");
+    await writeFile(path.join(fixture.repoRoot, "skills", suite.skills[0], "references", "context.md"), "updated resource\n");
+    await fixture.run(suite.command, ["--force"]);
+    assert.match(await readFile(path.join(fixture.target, last, "SKILL.md"), "utf8"), /updated skill/);
+    assert.equal(await readFile(path.join(fixture.target, suite.skills[0], "references", "context.md"), "utf8"), "updated resource\n");
+  });
+
+  test(`${suite.command} rejects missing target values before installing`, async () => {
+    const fixture = await suiteFixture();
+    for (const args of [["--target"], ["--target", "--force"]]) {
+      await assert.rejects(fixture.run(suite.command, args), (error) => {
+        assert.match(error.stderr, /Missing value for --target/);
+        return true;
+      });
+    }
+    assert.equal(await stat(fixture.target).catch(() => null), null);
+  });
+
+  test(`${suite.command} rejects agent-specific flags rather than ignoring them`, async () => {
+    const fixture = await suiteFixture();
+    for (const args of [["--agent", "codex"], ["--global"]]) {
+      await assert.rejects(fixture.run(suite.command, args), (error) => {
+        assert.match(error.stderr, /use --target/);
+        return true;
+      });
+    }
+    assert.equal(await stat(fixture.target).catch(() => null), null);
+  });
+}
+
+test("both suites coexist and updating Odoo does not overwrite development skills", async () => {
+  const fixture = await suiteFixture();
+  for (const suite of suiteCases) await fixture.run(suite.command);
+  const expected = suiteCases.flatMap(suite => suite.skills).sort();
+  assert.deepEqual((await readdir(fixture.target)).sort(), expected);
+  const developmentSkill = path.join(fixture.target, "dev-review", "SKILL.md");
+  await writeFile(developmentSkill, "keep development installation\n");
+  await writeSkill(fixture.repoRoot, "tenways-odoo-elk-diagnostics", "updated Odoo diagnostics");
+  await fixture.run("install-odoo", ["--force"]);
+  assert.equal(await readFile(developmentSkill, "utf8"), "keep development installation\n");
+  assert.match(await readFile(path.join(fixture.target, "tenways-odoo-elk-diagnostics", "SKILL.md"), "utf8"), /updated Odoo diagnostics/);
 });

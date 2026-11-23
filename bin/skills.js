@@ -5,13 +5,22 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const developmentSkills = [
-  "dev-requirements",
-  "dev-test",
-  "dev-review",
-  "dev-acceptance",
-  "dev-release",
-];
+const suites = new Map([
+  ["install-dev", [
+    "dev-requirements",
+    "dev-test",
+    "dev-review",
+    "dev-acceptance",
+    "dev-release",
+  ]],
+  ["install-odoo", [
+    "story-prd-to-simplified",
+    "story-simplified-to-tech-spec",
+    "bug-ticket-to-support",
+    "bug-support-to-tech-analysis",
+    "tenways-odoo-elk-diagnostics",
+  ]],
+]);
 
 function usage() {
   return [
@@ -19,13 +28,15 @@ function usage() {
     "  skills add <skill-name> [--agent <agent>] [--global] [--target <dir>] [--force]",
     "  skills install <skill-name> [--agent <agent>] [--global] [--target <dir>] [--force]",
     "  skills install-dev [--target <dir>] [--force]",
-    "  install-dev defaults to ~/.agents/skills",
+    "  skills install-odoo [--target <dir>] [--force]",
+    "  install-dev and install-odoo default to ~/.agents/skills",
     "",
     "Examples:",
     "  skills add merrill-clock-investing",
     "  skills add merrill-clock-investing --agent kimi",
     "  skills add merrill-clock-investing --agent kimi-cli --global",
     "  skills install-dev",
+    "  skills install-odoo",
   ].join("\n");
 }
 
@@ -46,8 +57,8 @@ function parseArgs(argv) {
 
   for (let index = 0; index < rest.length; index += 1) {
     const arg = rest[index];
-    if (command === "install-dev" && ["--agent", "-a", "--global", "-g"].includes(arg)) {
-      throw new Error("install-dev uses ~/.agents/skills; use --target to choose another directory.");
+    if (suites.has(command) && ["--agent", "-a", "--global", "-g"].includes(arg)) {
+      throw new Error(`${command} uses ~/.agents/skills; use --target to choose another directory.`);
     }
     if ((arg === "--agent" || arg === "-a" || arg === "--target") &&
         (!rest[index + 1] || rest[index + 1].startsWith("-"))) {
@@ -95,7 +106,7 @@ function resolveTargetRoot(options, cwd) {
     return path.resolve(cwd, options.target);
   }
 
-  if (options.command === "install-dev") {
+  if (suites.has(options.command)) {
     return path.join(homedir(), ".agents", "skills");
   }
 
@@ -116,7 +127,7 @@ function resolveTargetRoot(options, cwd) {
 }
 
 async function addSkills(options, cwd) {
-  const skillNames = options.command === "install-dev" ? developmentSkills : [options.skillName];
+  const skillNames = suites.get(options.command) ?? [options.skillName];
   if (!skillNames[0]) {
     throw new Error(`Missing skill name.\n\n${usage()}`);
   }
@@ -160,7 +171,7 @@ async function main() {
     return;
   }
 
-  if (!["add", "install", "install-dev"].includes(options.command)) {
+  if (!["add", "install"].includes(options.command) && !suites.has(options.command)) {
     throw new Error(`Unknown command: ${options.command}\n\n${usage()}`);
   }
 
