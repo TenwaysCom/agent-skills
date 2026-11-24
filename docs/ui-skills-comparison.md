@@ -4,6 +4,7 @@
 `design-taste-frontend` 更适合用一套强约束流程制作官网。
 `frontend-design` 更适合根据业务探索视觉方向。
 安装命令与调用示例见 [安装和使用 UI 设计 skills](ui-skills.md)。
+Vue 项目的组件实现方案见 [Vue UI 组件方案差异与选型](vue-ui-comparison.md)。
 
 本文依据截至 2026-11-24 的官方说明和源码比较。
 这些选型建议来自工作流与规则分析，没有经过同一任务的生成效果对比实测。

@@ -2,6 +2,7 @@
 
 按本指南安装 `ui-taste`、`design-taste-frontend` 或 `frontend-design`，再在目标项目中调用。
 选型依据见 [UI 设计 skills 差异与选型](ui-skills-comparison.md)。
+Vue 项目的组件接入与组件专用 skill 见 [安装和使用 Vue UI 组件](vue-ui.md)。
 
 ## 检查环境
 

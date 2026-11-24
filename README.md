@@ -25,6 +25,8 @@ npx --yes github:TenwaysCom/agent-skills#main install-odoo --force
 | 安装或更新 skills | [安装指南](docs/install.md) |
 | 安装并调用第三方 UI 设计 skills | [UI 设计 skills 安装与使用](docs/ui-skills.md) |
 | 比较 UI 设计 skills 并选型 | [UI 设计 skills 差异与选型](docs/ui-skills-comparison.md) |
+| 安装 Vue UI 组件并调用组件 skill | [Vue UI 安装与使用](docs/vue-ui.md) |
+| 比较 Vue UI 组件方案并选型 | [Vue UI 组件方案差异与选型](docs/vue-ui-comparison.md) |
 | 用开发套件推进需求 | [开发套件使用指南](docs/development-suite.md) |
 | 整理 Odoo 需求、缺陷和诊断 | [Odoo 套件使用指南](docs/odoo-suite.md) |
 | 查询命令、参数和默认目录 | [安装器参数参考](docs/installer-reference.md) |
