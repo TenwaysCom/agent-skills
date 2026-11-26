@@ -36,11 +36,13 @@ npx --yes github:TenwaysCom/agent-skills#main install-odoo --force
 
 | Skill | 职责 |
 | --- | --- |
-| [dev-requirements](skills/dev-requirements/SKILL.md) | 整理需求、验收条件、研发任务和需求演变 |
+| [dev-requirements](skills/dev-requirements/SKILL.md) | 集中管理需求和变更，按交付检查点同步 Issue |
 | [dev-test](skills/dev-test/SKILL.md) | 执行自测与回归，记录失败和未覆盖场景 |
 | [dev-review](skills/dev-review/SKILL.md) | 审查改动、处理发现、给出可合并结论 |
 | [dev-acceptance](skills/dev-acceptance/SKILL.md) | 执行预览验收和实际环境验收，判断交付是否完成 |
 | [dev-release](skills/dev-release/SKILL.md) | 准备或执行授权发布，核对版本、冒烟结果和回退 |
+
+需求和需求变更统一保存在 Issue 正文。开发中的调整、测试和 review 结果先累计到本地记录，在正式交付候选、验收及发布结果节点集中同步。候选交付前核对 commit、push 和远端 SHA，普通 push 不单独触发更新。需他人决策或影响协作的变化及时同步。具体节点见[开发套件使用指南](docs/development-suite.md#累计记录并按检查点同步)。
 
 在仓库检出目录中，也可用 `npm run install:dev` 安装开发套件。详细步骤见[安装指南](docs/install.md)。
 
